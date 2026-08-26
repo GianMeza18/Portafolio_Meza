@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+<rect width="1200" height="675" fill="#070b12"/><rect x="54" y="54" width="1092" height="567" rx="12" fill="#0d131e" stroke="#1e2a3b"/>
+<text x="100" y="150" fill="#4d8dff" font-family="Arial,sans-serif" font-size="22" font-weight="bold" letter-spacing="4">PROYECTO DE APLICACION PROFESIONAL</text>
+<text x="100" y="235" fill="#f5f7fb" font-family="Arial,sans-serif" font-size="64" font-weight="bold">Fundamentos de</text><text x="100" y="310" fill="#f5f7fb" font-family="Arial,sans-serif" font-size="64" font-weight="bold">un Proyecto Web</text>
+<text x="100" y="390" fill="#8996a9" font-family="Arial,sans-serif" font-size="25">Semana 01  /  Gian Meza</text><line x1="100" y1="455" x2="1100" y2="455" stroke="#1e2a3b"/><text x="100" y="520" fill="#57d597" font-family="Arial,sans-serif" font-size="21">IDEA  ·  PLANIFICACION  ·  DESARROLLO  ·  PUBLICACION</text>
+<circle cx="1010" cy="185" r="70" fill="#2563eb" opacity=".9"/><path d="M975 185h70M1010 150v70" stroke="white" stroke-width="5"/>
+</svg>
