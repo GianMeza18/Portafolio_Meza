@@ -1,2 +1,7 @@
+com\gianmeza\portafolio\controller\AuthController$UserProfile.class
 com\gianmeza\portafolio\controller\PortfolioController.class
 com\gianmeza\portafolio\ProyectoAplicacionProfesionalApplication.class
+com\gianmeza\portafolio\model\Evidence$EvidenceFile.class
+com\gianmeza\portafolio\service\EvidenceStorageService.class
+com\gianmeza\portafolio\controller\AuthController.class
+com\gianmeza\portafolio\model\Evidence.class
