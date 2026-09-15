@@ -44,7 +44,7 @@ El repositorio incluye un `Dockerfile` multi-etapa y `render.yaml`. Para despleg
 3. Define `PORTFOLIO_ADMIN_EMAIL`, `PORTFOLIO_ADMIN_PASSWORD`, `DB_URL`, `DB_USERNAME` y `DB_PASSWORD` como variables secretas en Render.
 4. Haz el primer despliegue y abre la URL pública que Render asigne.
 
-Los usuarios, evidencias y enlaces nuevos se almacenan en MySQL. El servicio de base de datos debe permitir conexiones desde Render y tener copias de seguridad.
+Los usuarios, evidencias y enlaces nuevos se almacenan en MySQL. El servicio de base de datos debe permitir conexiones desde Render y tener copias de seguridad. La cuenta administrativa usa `PORTFOLIO_ADMIN_EMAIL` y `PORTFOLIO_ADMIN_PASSWORD`.
 
 Para probar la imagen localmente:
 
