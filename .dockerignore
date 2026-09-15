@@ -1,0 +1,11 @@
+.git
+.gitignore
+.vscode
+target
+tmp-upload.pdf
+cookies.txt
+README.md
+COMPARACION_ANTES_DESPUES.md
+GUIA_DE_USO.md
+MIGRACION_HTML_A_JSP.md
+RESUMEN_MIGRACION.md

@@ -8,12 +8,16 @@ import java.util.HexFormat;
 
 import jakarta.servlet.http.HttpSession;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import com.gianmeza.portafolio.model.UserProfile;
 
 @Controller
 public class AuthController {
@@ -23,10 +27,24 @@ public class AuthController {
     private static final String DEFAULT_PUBLIC_PHOTO = "/img/mezafoto.jpeg";
 
     private final String adminEmail;
-    private final Path usersFile = Path.of("backed", "usuarios.txt");
+    private final String adminPassword;
+    private final Path usersFile;
+    private final JdbcTemplate jdbcTemplate;
 
-    public AuthController(@Value("${portfolio.admin-email:admin@gianmeza.com}") String adminEmail) {
+    public AuthController(String adminEmail) {
+        this(adminEmail, "gianmeza", "backed/usuarios.txt", null);
+    }
+
+    @Autowired
+    public AuthController(
+            @Value("${portfolio.admin-email:admin@gianmeza.com}") String adminEmail,
+            @Value("${portfolio.admin-password:gianmeza}") String adminPassword,
+            @Value("${portfolio.users-path:backed/usuarios.txt}") String usersPath,
+            JdbcTemplate jdbcTemplate) {
         this.adminEmail = adminEmail;
+        this.adminPassword = adminPassword;
+        this.usersFile = Path.of(usersPath).toAbsolutePath().normalize();
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @GetMapping("/login")
@@ -35,7 +53,7 @@ public class AuthController {
     @PostMapping("/login")
     public String authenticate(@RequestParam String email, @RequestParam String password, HttpSession session, Model model) {
         String normalizedEmail = email == null ? "" : email.trim().toLowerCase();
-        if (adminEmail.equalsIgnoreCase(normalizedEmail) && "gianmeza".equals(password)) {
+        if (adminEmail.equalsIgnoreCase(normalizedEmail) && adminPassword.equals(password)) {
             session.setAttribute("admin", true);
             session.removeAttribute("user");
             return "redirect:/backed";
@@ -45,13 +63,13 @@ public class AuthController {
             ensurePublicUser();
             session.setAttribute("user", normalizedEmail);
             session.removeAttribute("admin");
-            return "redirect:/perfil";
+            return "redirect:/";
         }
 
         if (registeredUser(normalizedEmail, password)) {
             session.setAttribute("user", normalizedEmail);
             session.removeAttribute("admin");
-            return "redirect:/perfil";
+            return "redirect:/";
         }
 
         model.addAttribute("error", "Correo o contraseña incorrectos.");
@@ -66,6 +84,21 @@ public class AuthController {
         String normalizedEmail = email == null ? "" : email.trim().toLowerCase();
         if (normalizedEmail.isBlank() || !normalizedEmail.contains("@") || password == null || password.length() < 6) {
             model.addAttribute("error", "Usa un correo válido y una contraseña de al menos 6 caracteres.");
+            return "register";
+        }
+        if (jdbcTemplate != null) {
+            try {
+                Integer existing = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM usuarios WHERE email = ?", Integer.class, normalizedEmail);
+                if (existing != null && existing > 0) {
+                    model.addAttribute("error", "Ese correo ya está registrado.");
+                } else {
+                    jdbcTemplate.update("INSERT INTO usuarios (email, password_hash, nombre, rol) VALUES (?, ?, ?, 'USUARIO')",
+                            normalizedEmail, hash(password), "Usuario");
+                    model.addAttribute("message", "Registro completado. Ya puedes iniciar sesión con tu correo y contraseña.");
+                }
+            } catch (Exception exception) {
+                model.addAttribute("error", "No se pudo completar el registro.");
+            }
             return "register";
         }
         try {
@@ -143,6 +176,12 @@ public class AuthController {
     }
 
     private void ensurePublicUser() {
+        if (jdbcTemplate != null) {
+            jdbcTemplate.update("INSERT INTO usuarios (email, password_hash, nombre, rol) VALUES (?, ?, ?, 'USUARIO') "
+                            + "ON DUPLICATE KEY UPDATE email = VALUES(email)",
+                    DEFAULT_PUBLIC_EMAIL, hash(DEFAULT_PUBLIC_PASSWORD), DEFAULT_PUBLIC_NAME);
+            return;
+        }
         try {
             Files.createDirectories(usersFile.getParent());
             if (!Files.exists(usersFile) || Files.readAllLines(usersFile).stream().noneMatch(line -> line.startsWith(DEFAULT_PUBLIC_EMAIL + "|"))) {
@@ -157,6 +196,11 @@ public class AuthController {
     }
 
     private UserProfile findUserProfile(String email) {
+        if (jdbcTemplate != null) {
+            return jdbcTemplate.query("SELECT email, nombre, foto_url, password_hash FROM usuarios WHERE email = ?",
+                    result -> result.next() ? new UserProfile(result.getString("email"), result.getString("nombre"),
+                            result.getString("foto_url"), result.getString("password_hash")) : null, email);
+        }
         try {
             if (!Files.exists(usersFile)) {
                 return null;
@@ -173,6 +217,11 @@ public class AuthController {
     }
 
     private void updateUserProfile(String currentEmail, String newEmail, String name, String passwordHash, String photoUrl) {
+        if (jdbcTemplate != null) {
+            jdbcTemplate.update("UPDATE usuarios SET email = ?, nombre = ?, password_hash = ?, foto_url = ? WHERE email = ?",
+                    newEmail, name, passwordHash, photoUrl, currentEmail);
+            return;
+        }
         try {
             Files.createDirectories(usersFile.getParent());
             if (!Files.exists(usersFile)) {
@@ -195,6 +244,11 @@ public class AuthController {
     }
 
     private boolean registeredUser(String email, String password) {
+        if (jdbcTemplate != null) {
+            Integer matches = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM usuarios WHERE email = ? AND password_hash = ?",
+                    Integer.class, email, hash(password));
+            return matches != null && matches > 0;
+        }
         try {
             if (!Files.exists(usersFile)) {
                 return false;
@@ -214,12 +268,6 @@ public class AuthController {
                     .digest(value.getBytes(StandardCharsets.UTF_8)));
         } catch (java.security.NoSuchAlgorithmException exception) {
             throw new IllegalStateException("SHA-256 no está disponible", exception);
-        }
-    }
-
-    private record UserProfile(String email, String name, String photoUrl, String passwordHash) {
-        public UserProfile(String email, String name, String photoUrl) {
-            this(email, name, photoUrl, "");
         }
     }
 }

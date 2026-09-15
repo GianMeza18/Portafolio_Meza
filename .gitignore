@@ -1,0 +1,7 @@
+target/
+tmp-upload.pdf
+cookies.txt
+
+# Datos locales publicados por el panel administrador
+backed/usuarios.txt
+backed/evidencias/*/detalles.properties

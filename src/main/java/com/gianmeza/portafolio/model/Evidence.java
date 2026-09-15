@@ -14,6 +14,10 @@ public record Evidence(
         return String.format("Semana %02d", week);
     }
 
+    public int getWeek() {
+        return week;
+    }
+
     public record EvidenceFile(String name, String type, String url, String icon, boolean external) {
         public EvidenceFile(String name, String type, String url, String icon) {
             this(name, type, url, icon, false);
