@@ -14,7 +14,7 @@ ENV PORT=8080 \
     PORTFOLIO_STORAGE_PATH=/var/lib/portafolio/evidencias \
     PORTFOLIO_USERS_PATH=/var/lib/portafolio/usuarios.txt
 
-COPY --from=build /workspace/target/*.jar /app/app.jar
+COPY --from=build /workspace/target/*.war /app/app.war
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-jar", "/app/app.war"]

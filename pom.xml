@@ -10,6 +10,7 @@
     <groupId>com.gianmeza</groupId>
     <artifactId>ProyectoAplicacionProfesional</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <packaging>war</packaging>
     <name>ProyectoAplicacionProfesional</name>
     <description>e-Portafolio profesional de evidencias universitarias</description>
     <properties>
