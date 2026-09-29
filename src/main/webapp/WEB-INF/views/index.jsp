@@ -68,7 +68,7 @@
             <div class="eyebrow">Disponible para aprender y crear</div>
             <div class="hero-title-row">
                 <h1 class="hero-title">Portafolio de <span class="accent-text">Giancarlo Meza</span></h1>
-                <img class="hero-portrait" src="${pageContext.request.contextPath}/img/mezafoto.jpeg" alt="Fotografía de Giancarlo Meza">
+                <img class="hero-portrait" src="${pageContext.request.contextPath}/img/mezafoto.jpeg" alt="Fotografía de Giancarlo Meza" width="160" height="192">
             </div>
             <p class="hero-copy">
                 <strong>Giancarlo Meza</strong> · Estudiante de Diseño y Programación Web especializado 

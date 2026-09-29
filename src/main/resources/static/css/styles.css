@@ -190,15 +190,16 @@ a { color: inherit; text-decoration: none; }
 .hero-grid > div:first-child { max-width: 960px; }
 .hero-title-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 220px;
+  grid-template-columns: minmax(0, 1fr) 180px;
   align-items: center;
   gap: 28px;
 }
 .hero-title { min-width: 0; font-size: clamp(2.8rem, 5vw, 5rem); overflow-wrap: anywhere; }
 .hero-portrait {
   display: block;
-  width: 200px;
-  height: 240px;
+  width: 160px;
+  height: 192px;
+  max-width: 100%;
   justify-self: center;
   object-fit: cover;
   border: 1px solid rgba(255, 30, 30, 0.9);
@@ -786,9 +787,9 @@ footer {
   .skill-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .evidence-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .timeline { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .hero-title-row { grid-template-columns: minmax(0, 1fr) 180px; gap: 18px; }
+  .hero-title-row { grid-template-columns: minmax(0, 1fr) 150px; gap: 18px; }
   .hero-title { font-size: clamp(2.5rem, 5.8vw, 4rem); }
-  .hero-portrait { width: 164px; height: 196px; }
+  .hero-portrait { width: 140px; height: 168px; }
 }
 @media (max-width: 560px) {
   .container, .site-nav > .container { width: min(100% - 28px, 1160px); }
@@ -811,5 +812,5 @@ footer {
   .profile-heading h1 { font-size: 1.35rem; }
   .hero-title-row { grid-template-columns: 1fr; gap: 16px; }
   .hero-title { font-size: clamp(2.2rem, 10vw, 3.2rem); }
-  .hero-portrait { width: 160px; height: 192px; justify-self: start; }
+  .hero-portrait { width: 128px; height: 154px; justify-self: start; }
 }
