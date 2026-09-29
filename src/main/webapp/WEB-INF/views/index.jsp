@@ -85,10 +85,6 @@
                 </a>
             </div>
         </div>
-        <div class="profile-frame" data-aos="fade-left" data-aos-delay="150">
-            <img src="${pageContext.request.contextPath}/img/mezafoto.jpeg" alt="Fotografía de Giancarlo Meza">
-            <div class="profile-note"><b>2026</b>Proyecto de Aplicación Profesional</div>
-        </div>
     </div>
 </section>
 
