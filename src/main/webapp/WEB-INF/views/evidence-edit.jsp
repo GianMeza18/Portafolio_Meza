@@ -52,10 +52,10 @@
         </section>
 
         <section class="upload-panel current-files-panel">
-            <h2><i class="bi bi-folder2-open"></i> Archivos actuales</h2>
+            <h2><i class="bi bi-folder2-open"></i> Trabajos y enlaces publicados</h2>
             <c:choose>
                 <c:when test="${empty evidence.files()}">
-                    <p class="empty-state">No hay archivos almacenados para esta semana.</p>
+                    <p class="empty-state">No hay trabajos ni enlaces publicados para esta semana.</p>
                 </c:when>
                 <c:otherwise>
                     <div class="file-list">
@@ -63,9 +63,26 @@
                             <div class="file-item">
                                 <i class="bi ${file.icon()}"></i>
                                 <div>
-                                    <strong>${file.name()}</strong>
+                                    <c:choose>
+                                        <c:when test="${file.external()}">
+                                            <a href="${file.url()}" target="_blank" rel="noopener noreferrer"><strong>${file.name()}</strong></a>
+                                        </c:when>
+                                        <c:otherwise><strong>${file.name()}</strong></c:otherwise>
+                                    </c:choose>
                                     <small>${file.type()}</small>
                                 </div>
+                                <c:choose>
+                                    <c:when test="${file.external()}">
+                                        <form method="post" action="${pageContext.request.contextPath}/backed/eliminar-enlace/${evidence.week()}/${file.id()}" onsubmit="return confirm('¿Eliminar este enlace?');">
+                                            <button class="delete-action" type="submit" title="Eliminar enlace" aria-label="Eliminar enlace"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <form method="post" action="${pageContext.request.contextPath}/backed/eliminar-trabajo/${evidence.week()}/${file.id()}" onsubmit="return confirm('¿Eliminar este trabajo?');">
+                                            <button class="delete-action" type="submit" title="Eliminar trabajo" aria-label="Eliminar trabajo"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
                         </c:forEach>
                     </div>

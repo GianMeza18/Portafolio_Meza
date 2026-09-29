@@ -698,6 +698,18 @@ footer {
 .file-item strong { color: white; font-size: 0.76rem; }
 .file-item small { color: var(--muted); font-size: 0.7rem; }
 .file-item a { color: var(--red); }
+.file-item form { margin: 0 0 0 auto; }
+.delete-action {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255, 30, 30, 0.8);
+  background: rgba(255, 30, 30, 0.08);
+  color: #ff7777;
+  cursor: pointer;
+}
+.delete-action:hover { background: rgba(255, 30, 30, 0.22); color: white; }
 
 .auth-page, .backed-page, .profile-page {
   padding-top: 150px;

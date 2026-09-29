@@ -112,6 +112,7 @@ public ResponseEntity<Resource> viewFile(
                 storage.replaceFiles(week, files);
             }
             redirect.addFlashAttribute("message", "Semana " + String.format("%02d", week) + " actualizada correctamente.");
+            return "redirect:/backed/actualizar/" + week;
         } catch (Exception exception) {
             redirect.addFlashAttribute("error", exception.getMessage());
         }
@@ -160,7 +161,7 @@ public String upload(
 
     }
 
-    return "redirect:/backed";
+    return "redirect:/backed/actualizar/" + week;
 }
 
     public String upload(int week, MultipartFile file, HttpSession session, RedirectAttributes redirect) {
@@ -176,7 +177,39 @@ public String upload(
         } catch (Exception exception) {
             redirect.addFlashAttribute("error", exception.getMessage());
         }
-        return "redirect:/backed";
+        return "redirect:/backed/actualizar/" + week;
+    }
+
+    @PostMapping("/backed/eliminar-trabajo/{week}/{workId}")
+    public String deleteWork(@PathVariable int week, @PathVariable long workId, HttpSession session, RedirectAttributes redirect) {
+        if (!isAdmin(session)) return "redirect:/login";
+        if (week < 1 || week > 16 || workId < 1) return "redirect:/backed";
+        try {
+            if (storage.deleteWork(week, workId)) {
+                redirect.addFlashAttribute("message", "Trabajo eliminado correctamente.");
+            } else {
+                redirect.addFlashAttribute("error", "No se encontró ese trabajo en la semana seleccionada.");
+            }
+        } catch (Exception exception) {
+            redirect.addFlashAttribute("error", "No se pudo eliminar el trabajo.");
+        }
+        return "redirect:/backed/actualizar/" + week;
+    }
+
+    @PostMapping("/backed/eliminar-enlace/{week}/{linkId}")
+    public String deleteLink(@PathVariable int week, @PathVariable long linkId, HttpSession session, RedirectAttributes redirect) {
+        if (!isAdmin(session)) return "redirect:/login";
+        if (week < 1 || week > 16 || linkId < 1) return "redirect:/backed";
+        try {
+            if (storage.deleteLink(week, linkId)) {
+                redirect.addFlashAttribute("message", "Enlace eliminado correctamente.");
+            } else {
+                redirect.addFlashAttribute("error", "No se encontró ese enlace en la semana seleccionada.");
+            }
+        } catch (Exception exception) {
+            redirect.addFlashAttribute("error", "No se pudo eliminar el enlace.");
+        }
+        return "redirect:/backed/actualizar/" + week;
     }
 
     private Evidence buildEvidence(int week) {

@@ -203,7 +203,7 @@ class PortfolioControllerTest {
         
         String result = portfolioController.upload(5, multipartFile, session, redirectAttributes);
         
-        assertEquals("redirect:/backed", result, "Upload should redirect to /backed");
+        assertEquals("redirect:/backed/actualizar/5", result, "Upload should open the week management view");
         verify(evidenceStorageService).saveFile(5, multipartFile);
         verify(redirectAttributes).addFlashAttribute(eq("message"), contains("Semana 05"));
     }
@@ -216,7 +216,7 @@ class PortfolioControllerTest {
         
         String result = portfolioController.upload(1, multipartFile, session, redirectAttributes);
         
-        assertEquals("redirect:/backed", result, "Upload should redirect to /backed even on error");
+        assertEquals("redirect:/backed/actualizar/1", result, "Upload errors should return to the week editor");
         verify(redirectAttributes).addFlashAttribute(eq("error"), contains("Upload failed"));
     }
 
@@ -250,7 +250,7 @@ class PortfolioControllerTest {
         
         String result = portfolioController.link(5, "Test Link", "https://example.com", session, redirectAttributes);
         
-        assertEquals("redirect:/backed", result, "Link should redirect to /backed");
+        assertEquals("redirect:/backed/actualizar/5", result, "Link should open the week management view");
         verify(evidenceStorageService).saveLink(5, "Test Link", "https://example.com");
         verify(redirectAttributes).addFlashAttribute(eq("message"), contains("Semana 05"));
     }
@@ -263,7 +263,7 @@ class PortfolioControllerTest {
         
         String result = portfolioController.link(1, "Test", "https://example.com", session, redirectAttributes);
         
-        assertEquals("redirect:/backed", result, "Link should redirect to /backed even on error");
+        assertEquals("redirect:/backed/actualizar/1", result, "Link errors should return to the week editor");
         verify(redirectAttributes).addFlashAttribute(eq("error"), contains("Link save failed"));
     }
 
@@ -274,6 +274,43 @@ class PortfolioControllerTest {
         
         portfolioController.link(3, "Link", "https://example.com", session, redirectAttributes);
         verify(redirectAttributes).addFlashAttribute(eq("message"), contains("Semana 03"));
+    }
+
+    @Test
+    @DisplayName("Should delete a work for an admin and return to the week editor")
+    void testDeleteWorkForAdmin() {
+        when(session.getAttribute("admin")).thenReturn(true);
+        when(evidenceStorageService.deleteWork(5, 12)).thenReturn(true);
+
+        String result = portfolioController.deleteWork(5, 12, session, redirectAttributes);
+
+        assertEquals("redirect:/backed/actualizar/5", result);
+        verify(evidenceStorageService).deleteWork(5, 12);
+        verify(redirectAttributes).addFlashAttribute("message", "Trabajo eliminado correctamente.");
+    }
+
+    @Test
+    @DisplayName("Should delete a link for an admin and return to the week editor")
+    void testDeleteLinkForAdmin() {
+        when(session.getAttribute("admin")).thenReturn(true);
+        when(evidenceStorageService.deleteLink(5, 18)).thenReturn(true);
+
+        String result = portfolioController.deleteLink(5, 18, session, redirectAttributes);
+
+        assertEquals("redirect:/backed/actualizar/5", result);
+        verify(evidenceStorageService).deleteLink(5, 18);
+        verify(redirectAttributes).addFlashAttribute("message", "Enlace eliminado correctamente.");
+    }
+
+    @Test
+    @DisplayName("Should block work deletion without admin privileges")
+    void testDeleteWorkRequiresAdmin() {
+        when(session.getAttribute("admin")).thenReturn(false);
+
+        String result = portfolioController.deleteWork(5, 12, session, redirectAttributes);
+
+        assertEquals("redirect:/login", result);
+        verifyNoInteractions(evidenceStorageService);
     }
 
     // ========== Download Tests ==========

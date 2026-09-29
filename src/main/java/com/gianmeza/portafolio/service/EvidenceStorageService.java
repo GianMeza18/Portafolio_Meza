@@ -25,11 +25,11 @@ public class EvidenceStorageService {
     }
 
     public List<Evidence.EvidenceFile> filesFor(int week) {
-        return jdbcTemplate.query("SELECT nombre_archivo, tipo_archivo, icono FROM trabajos WHERE semana_id = ? ORDER BY nombre_archivo",
+        return jdbcTemplate.query("SELECT id, nombre_archivo, tipo_archivo, icono FROM trabajos WHERE semana_id = ? ORDER BY nombre_archivo",
                 (result, row) -> new Evidence.EvidenceFile(result.getString("nombre_archivo"),
                         typeOf(result.getString("nombre_archivo"), result.getString("tipo_archivo")),
-                        "/evidencias/archivo/" + week + "/" + result.getString("nombre_archivo"),
-                        result.getString("icono"), false), week);
+                "/evidencias/archivo/" + week + "/" + result.getString("nombre_archivo"),
+                result.getString("icono"), false, result.getLong("id")), week);
     }
 
     public Evidence.EvidenceFile saveFile(int week, MultipartFile file) throws IOException {
@@ -76,11 +76,19 @@ public class EvidenceStorageService {
         return new Evidence.EvidenceFile(safeName, "Enlace", url, "bi-link-45deg", true);
     }
 
+    public boolean deleteWork(int week, long workId) {
+        return jdbcTemplate.update("DELETE FROM trabajos WHERE semana_id = ? AND id = ?", week, workId) > 0;
+    }
+
+    public boolean deleteLink(int week, long linkId) {
+        return jdbcTemplate.update("DELETE FROM enlaces WHERE semana_id = ? AND id = ?", week, linkId) > 0;
+    }
+
     public List<Evidence.EvidenceFile> allFor(int week) {
         List<Evidence.EvidenceFile> result = new ArrayList<>(filesFor(week));
-        result.addAll(jdbcTemplate.query("SELECT nombre, url FROM enlaces WHERE semana_id = ? ORDER BY id",
+        result.addAll(jdbcTemplate.query("SELECT id, nombre, url FROM enlaces WHERE semana_id = ? ORDER BY id",
                 (resultSet, row) -> new Evidence.EvidenceFile(resultSet.getString("nombre"), "Enlace",
-                        resultSet.getString("url"), "bi-link-45deg", true), week));
+                        resultSet.getString("url"), "bi-link-45deg", true, resultSet.getLong("id")), week));
         return result;
     }
 

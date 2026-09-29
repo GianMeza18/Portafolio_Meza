@@ -18,9 +18,13 @@ public record Evidence(
         return week;
     }
 
-    public record EvidenceFile(String name, String type, String url, String icon, boolean external) {
+    public record EvidenceFile(String name, String type, String url, String icon, boolean external, long id) {
+        public EvidenceFile(String name, String type, String url, String icon, boolean external) {
+            this(name, type, url, icon, external, 0);
+        }
+
         public EvidenceFile(String name, String type, String url, String icon) {
-            this(name, type, url, icon, false);
+            this(name, type, url, icon, false, 0);
         }
     }
 }
