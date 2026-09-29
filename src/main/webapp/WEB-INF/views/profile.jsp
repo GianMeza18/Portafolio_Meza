@@ -32,13 +32,8 @@
     <div class="container profile-shell">
         <section class="profile-card">
             <%-- Información del perfil del usuario --%>
-            <form method="post" action="${pageContext.request.contextPath}/perfil" enctype="multipart/form-data" class="profile-form">
+            <form method="post" action="${pageContext.request.contextPath}/perfil" class="profile-form">
                 <div class="profile-header">
-                    <div class="profile-photo-column">
-                        <img id="profileAvatar" src="${pageContext.request.contextPath}${userProfile.photoUrl}" alt="Foto de perfil" class="profile-avatar" onerror="this.src='${pageContext.request.contextPath}/img/mezafoto.jpeg'">
-                        <label for="profilePhoto" class="button-secondary profile-photo-button"><i class="bi bi-camera"></i> Agregar foto</label>
-                        <input id="profilePhoto" type="file" name="photo" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
-                    </div>
                     <div class="profile-heading">
                         <div class="section-label">Perfil de usuario</div>
                         <h1>${userProfile.name}</h1>
@@ -76,7 +71,7 @@
 </main>
 
 <script>
-    // Validación y vista previa de la foto seleccionada.
+    // Validación del perfil.
     document.querySelector('form').addEventListener('submit', function(event) {
         const name = document.querySelector('input[name="name"]').value.trim();
         const email = document.querySelector('input[name="email"]').value.trim();
@@ -107,9 +102,6 @@
         }
     });
 
-    document.querySelector('#profilePhoto').addEventListener('change', function() {
-        if (this.files[0]) document.querySelector('#profileAvatar').src = URL.createObjectURL(this.files[0]);
-    });
 </script>
 </body>
 </html>

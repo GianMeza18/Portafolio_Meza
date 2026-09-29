@@ -42,13 +42,7 @@
                 <c:when test="${not empty sessionScope.user or not empty sessionScope.admin}">
                     <%-- Usuario logged in --%>
                     <a class="button-secondary" href="${pageContext.request.contextPath}/perfil">
-                        <c:choose>
-                            <c:when test="${not empty sessionScope.user}">
-                                <img class="nav-profile-avatar" src="${pageContext.request.contextPath}${sessionScope.userPhoto}" alt="">
-                            </c:when>
-                            <c:otherwise><i class="bi bi-person-circle"></i></c:otherwise>
-                        </c:choose>
-                        Perfil
+                        <i class="bi bi-person-circle"></i> Perfil
                     </a>
                     <a class="button-secondary" href="${pageContext.request.contextPath}/logout">
                         <i class="bi bi-box-arrow-right"></i> Cerrar sesión
@@ -72,7 +66,10 @@
     <div class="container hero-grid">
         <div data-aos="fade-up">
             <div class="eyebrow">Disponible para aprender y crear</div>
-            <h1>Portafolio de <span class="accent-text">Giancarlo Meza</span></h1>
+            <div class="hero-title-row">
+                <h1 class="hero-title">Portafolio de <span class="accent-text">Giancarlo Meza</span></h1>
+                <img class="hero-portrait" src="${pageContext.request.contextPath}/img/mezafoto.jpeg" alt="Fotografía de Giancarlo Meza">
+            </div>
             <p class="hero-copy">
                 <strong>Giancarlo Meza</strong> · Estudiante de Diseño y Programación Web especializado 
                 en Desarrollo Web con Java. Este es el registro vivo de mi evolución profesional.

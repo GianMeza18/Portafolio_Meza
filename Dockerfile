@@ -12,8 +12,7 @@ FROM eclipse-temurin:24-jre
 WORKDIR /app
 ENV PORT=8080 \
     PORTFOLIO_STORAGE_PATH=/var/lib/portafolio/evidencias \
-    PORTFOLIO_USERS_PATH=/var/lib/portafolio/usuarios.txt \
-    PORTFOLIO_PROFILE_PHOTOS_PATH=/var/lib/portafolio/profile-photos
+    PORTFOLIO_USERS_PATH=/var/lib/portafolio/usuarios.txt
 
 COPY --from=build /workspace/target/*.war /app/app.war
 
