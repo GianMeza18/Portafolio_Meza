@@ -8,9 +8,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.ui.Model;
 
 import java.nio.charset.StandardCharsets;
@@ -33,6 +35,9 @@ class AuthControllerTest {
     
     @Mock
     private Model model;
+
+    @TempDir
+    private Path temporaryDirectory;
 
     @BeforeEach
     void setUp() {
@@ -222,7 +227,7 @@ class AuthControllerTest {
     @DisplayName("Should reject profile update without session")
     void testActualizarPerfilWithoutSession() {
         String result = authController.actualizarPerfil("New Name", "new@email.com", "newpass123", 
-                "/img/newphoto.jpg", session, model);
+            null, session, model);
         
         assertEquals("redirect:/login", result, "Profile update without session should redirect to login");
     }
@@ -239,7 +244,7 @@ class AuthControllerTest {
         // Now update profile
         reset(session);
         when(session.getAttribute("user")).thenReturn("vlecmanusa18@gmail.com");
-        String result = authController.actualizarPerfil("Updated Name", null, null, "/img/updated.jpg", session, model);
+        String result = authController.actualizarPerfil("Updated Name", null, null, null, session, model);
         
         assertEquals("profile", result, "Profile update should return profile view");
         verify(session).setAttribute("user", "vlecmanusa18@gmail.com");
@@ -263,6 +268,24 @@ class AuthControllerTest {
         
         assertEquals("profile", result, "Profile update should return profile view");
         cleanupTestFiles();
+    }
+
+    @Test
+    @DisplayName("Should store an uploaded profile photo and update the session avatar")
+    void testActualizarPerfilStoresUploadedPhoto() throws Exception {
+        Path usersFile = temporaryDirectory.resolve("users.txt");
+        Path photosDirectory = temporaryDirectory.resolve("profile-photos");
+        authController = new AuthController("admin@gianmeza.com", "gianmeza", usersFile.toString(), null, photosDirectory.toString());
+        when(session.getAttribute("user")).thenReturn("vlecmanusa18@gmail.com");
+        authController.authenticate("vlecmanusa18@gmail.com", "gianmeza", session, model);
+        MockMultipartFile photo = new MockMultipartFile("photo", "avatar.png", "image/png", new byte[] { 1, 2, 3 });
+
+        String result = authController.actualizarPerfil("Giancarlo", null, null, photo, session, model);
+
+        assertEquals("profile", result);
+        Path storedPhoto = Files.list(photosDirectory).findFirst().orElseThrow();
+        assertArrayEquals(new byte[] { 1, 2, 3 }, Files.readAllBytes(storedPhoto));
+        verify(session).setAttribute(eq("userPhoto"), argThat(url -> url.toString().startsWith("/perfil/foto/")));
     }
 
     // ========== Helper Methods ==========

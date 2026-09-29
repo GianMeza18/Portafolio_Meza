@@ -42,7 +42,13 @@
                 <c:when test="${not empty sessionScope.user or not empty sessionScope.admin}">
                     <%-- Usuario logged in --%>
                     <a class="button-secondary" href="${pageContext.request.contextPath}/perfil">
-                        <i class="bi bi-person-circle"></i> Perfil
+                        <c:choose>
+                            <c:when test="${not empty sessionScope.user}">
+                                <img class="nav-profile-avatar" src="${pageContext.request.contextPath}${sessionScope.userPhoto}" alt="">
+                            </c:when>
+                            <c:otherwise><i class="bi bi-person-circle"></i></c:otherwise>
+                        </c:choose>
+                        Perfil
                     </a>
                     <a class="button-secondary" href="${pageContext.request.contextPath}/logout">
                         <i class="bi bi-box-arrow-right"></i> Cerrar sesión

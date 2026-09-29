@@ -3,19 +3,27 @@ package com.gianmeza.portafolio.controller;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.util.HexFormat;
+import java.util.UUID;
 
 import jakarta.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.gianmeza.portafolio.model.UserProfile;
 
@@ -29,10 +37,11 @@ public class AuthController {
     private final String adminEmail;
     private final String adminPassword;
     private final Path usersFile;
+    private final Path profilePhotosPath;
     private final JdbcTemplate jdbcTemplate;
 
     public AuthController(String adminEmail) {
-        this(adminEmail, "gianmeza", "backed/usuarios.txt", null);
+        this(adminEmail, "gianmeza", "backed/usuarios.txt", null, "backed/profile-photos");
     }
 
     @Autowired
@@ -40,10 +49,12 @@ public class AuthController {
             @Value("${portfolio.admin-email:admin@gianmeza.com}") String adminEmail,
             @Value("${portfolio.admin-password:gianmeza}") String adminPassword,
             @Value("${portfolio.users-path:backed/usuarios.txt}") String usersPath,
-            JdbcTemplate jdbcTemplate) {
+            JdbcTemplate jdbcTemplate,
+            @Value("${portfolio.profile-photos-path:backed/profile-photos}") String profilePhotosPath) {
         this.adminEmail = adminEmail;
         this.adminPassword = adminPassword;
         this.usersFile = Path.of(usersPath).toAbsolutePath().normalize();
+        this.profilePhotosPath = Path.of(profilePhotosPath).toAbsolutePath().normalize();
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -62,12 +73,14 @@ public class AuthController {
         if (isPublicUser(normalizedEmail, password)) {
             ensurePublicUser();
             session.setAttribute("user", normalizedEmail);
+            setSessionProfile(session, normalizedEmail);
             session.removeAttribute("admin");
             return "redirect:/";
         }
 
         if (registeredUser(normalizedEmail, password)) {
             session.setAttribute("user", normalizedEmail);
+            setSessionProfile(session, normalizedEmail);
             session.removeAttribute("admin");
             return "redirect:/";
         }
@@ -140,15 +153,36 @@ public class AuthController {
                 profile = findUserProfile(email);
             }
         }
+        session.setAttribute("userPhoto", profile == null ? DEFAULT_PUBLIC_PHOTO : profile.photoUrl());
         model.addAttribute("userProfile", profile == null ? new UserProfile(email, "Usuario", "/img/mezafoto.jpeg") : profile);
         return "profile";
+    }
+
+    @GetMapping("/perfil/foto/{filename:.+}")
+    public ResponseEntity<Resource> profilePhoto(@PathVariable String filename) {
+        if (!filename.matches("[a-f0-9-]+\\.(jpg|png|gif|webp)")) {
+            return ResponseEntity.notFound().build();
+        }
+        Path file = profilePhotosPath.resolve(filename).normalize();
+        if (!file.startsWith(profilePhotosPath) || !Files.isRegularFile(file)) {
+            return ResponseEntity.notFound().build();
+        }
+        String contentType = switch (filename.substring(filename.lastIndexOf('.') + 1)) {
+            case "png" -> "image/png";
+            case "gif" -> "image/gif";
+            case "webp" -> "image/webp";
+            default -> "image/jpeg";
+        };
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .body(new FileSystemResource(file));
     }
 
     @PostMapping("/perfil")
     public String actualizarPerfil(@RequestParam(required = false) String name,
                                   @RequestParam(required = false) String email,
                                   @RequestParam(required = false) String password,
-                                  @RequestParam(required = false, defaultValue = "/img/mezafoto.jpeg") String photoUrl,
+                                  @RequestParam(value = "photo", required = false) MultipartFile photo,
                                   HttpSession session, Model model) {
         String currentEmail = (String) session.getAttribute("user");
         if (currentEmail == null || currentEmail.isBlank()) {
@@ -162,13 +196,45 @@ public class AuthController {
 
         String newEmail = email == null || email.isBlank() ? current.email() : email.trim().toLowerCase();
         String newName = name == null || name.isBlank() ? current.name() : name.trim();
-        String newPhoto = photoUrl == null || photoUrl.isBlank() ? current.photoUrl() : photoUrl.trim();
+        String newPhoto = current.photoUrl();
+        if (photo != null && !photo.isEmpty()) {
+            try {
+                newPhoto = storeProfilePhoto(photo);
+            } catch (Exception exception) {
+                model.addAttribute("error", exception.getMessage());
+                model.addAttribute("userProfile", current);
+                return "profile";
+            }
+        }
         String newPasswordHash = password == null || password.isBlank() ? current.passwordHash() : hash(password);
 
         updateUserProfile(current.email(), newEmail, newName, newPasswordHash, newPhoto);
         session.setAttribute("user", newEmail);
+        session.setAttribute("userPhoto", newPhoto);
         model.addAttribute("userProfile", new UserProfile(newEmail, newName, newPhoto));
         return "profile";
+    }
+
+    private void setSessionProfile(HttpSession session, String email) {
+        UserProfile profile = findUserProfile(email);
+        session.setAttribute("userPhoto", profile == null ? DEFAULT_PUBLIC_PHOTO : profile.photoUrl());
+    }
+
+    private String storeProfilePhoto(MultipartFile photo) throws java.io.IOException {
+        if (photo.getSize() > 5 * 1024 * 1024) {
+            throw new IllegalArgumentException("La foto no debe superar los 5 MB.");
+        }
+        String extension = switch (photo.getContentType() == null ? "" : photo.getContentType().toLowerCase()) {
+            case "image/jpeg" -> "jpg";
+            case "image/png" -> "png";
+            case "image/gif" -> "gif";
+            case "image/webp" -> "webp";
+            default -> throw new IllegalArgumentException("Selecciona una imagen JPG, PNG, GIF o WEBP.");
+        };
+        Files.createDirectories(profilePhotosPath);
+        String filename = UUID.randomUUID() + "." + extension;
+        Files.write(profilePhotosPath.resolve(filename), photo.getBytes(), StandardOpenOption.CREATE_NEW);
+        return "/perfil/foto/" + filename;
     }
 
     private boolean isPublicUser(String email, String password) {
