@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/styles.css?v=portrait-right-medium-2">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/styles.css?v=portrait-right-medium-3">
 </head>
 <body>
 <%-- Loader --%>
@@ -69,7 +69,7 @@
             <div class="hero-title-row">
                 <h1 class="hero-title">Portafolio de<br><span class="accent-text">Giancarlo Meza</span></h1>
                 <div class="hero-portrait-frame">
-                    <img class="hero-portrait" src="${pageContext.request.contextPath}/img/mezafoto.jpeg" alt="Fotografía de Giancarlo Meza" width="160" height="192">
+                    <img class="hero-portrait" src="${pageContext.request.contextPath}/img/mezafoto.jpeg" alt="Fotografía de Giancarlo Meza" width="180" height="216">
                 </div>
             </div>
             <p class="hero-copy">
